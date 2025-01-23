@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+    - name: flight_crashes
+      description: Data on flight crashes dating back to 1908 and airports from kaggle.
+      database: raw
+      schema: flight_accidents
+      tables:
+          - name: airports
+            description: One record per airport. Includes closed airports.
+          - name: crashes_and_fatalities
+            description: One record per crash.
+    - name: flights
+      description: CIRIUM database containing flights, updated every hour with updated data.
+      database: cirium_flight_data
+      schema: public
+      tables:
+          - name: flights
+            description: One record per flight (gate-to-gate data).

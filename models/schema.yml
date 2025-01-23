@@ -1,0 +1,135 @@
+version: 2
+
+models:
+  - name: flightcrashes
+    description: Contains flight crashes from 1908 till 2025 with one record per crash.
+    config:
+      materialized: table
+    columns:
+      - name: date
+        description: date of the crash
+        tests:
+          - not_null
+      - name: location
+        description: location of the crash
+      - name: operator
+        description: operator of the airplane
+      - name: flight_no
+        description: flight number of the airplane
+      - name: route
+        description: route the airplane was flying when it crashed
+      - name: source
+        description: source of the flight - first item in route if specified
+      - name: destination
+        description: destination of the flight - last item in route if specified
+      - name: plane_type
+        description: the type of the airplane
+      - name: aboard
+        description: the number of people aboard the airplane
+      - name: fatalities
+        description: the number of fatalities of people aboard the airplane
+      - name: ground_fatalities
+        description: the number of fatalities of people on the ground
+      - name: crash_description
+        description: description of the crash and causes
+      - name: crash_type
+        description: mapping of crash descriptions into types of plane crashes
+        tests:
+          - accepted_values:
+              values: ['Midair Collision', 'Midair Collision', 'Pilot Error', 'Shot Down', 'Engine / Fuel Trouble', 'Loss of Power', 'Explosion', 'Crashed Into Terrain', 'Weather', 'Ice', 'Smoke / Fire', 'Fuselage Failure', 'Control Problem', 'Takeoff', 'Landing', 'Stalled', 'Unknown']
+  
+  - name: airports
+    description: Contains active and closed airports, one line per airport.
+    config:
+      materialized: table
+    columns:
+      - name: airport_id
+        description: The ID of the airport
+        tests:
+          - not_null
+          - unique
+      - name: type
+        description: The type of airport - specifically in terms of sizes small, medium and large
+        tests:
+          - not_null
+      - name: name
+        description: The common name of the airport
+      - name: elevation_ft
+        description: The elevation that the airport is at in feet
+      - name: country_code
+        description: The ISO country code where the airport is located
+      - name: municipality
+        description: The municipality where the airport is located
+      - name: runway_length_ft
+        description: The length of the runway in feet
+      - name: runway_width_ft
+        description: The width of the runway in feet
+      - name: runway_surface
+        description: The surface of the runway
+      - name: runway_lighted
+        description: Whether the runway is lighted
+    
+  - name: flights
+    description: Contains flights from gate-to-gate from 2017 going forward updated every hour.
+    config:
+      materialized: view
+    columns:
+      - name: flight_id
+        description: unique identifier of a flight (primary key)
+        tests:
+          - not_null
+          - unique
+      - name: flight_number
+        description: unique identifier of an airplane
+        tests:
+          - not_null
+      - name: flight_date
+        description: date of the flight
+        tests:
+          - not_null
+      - name: is_diverted
+        description: whether the flight was diverted
+      - name: is_cancelled
+        description: whether the flight was cancelled
+      - name: flight_duration
+        description: total duration of the flight
+      - name: departure_airport_id
+        description: The airport which the plane is scheduled to depart from. Corresponds to an ID in the airports table.
+      - name: departure_expected
+        description: the expected departure time in local time
+      - name: departure_actual
+        description: the actual departure time in local time
+      - name: departure_taxi_time
+        description: the time spent taxiing to the runway
+      - name: departure_delay
+        description: the delay of the departure time (negative numbers indicates taking off before scheduled)
+      - name: arrival_airport_id
+        description: The airport which the plane is scheduled to arrive at. Corresponds to an ID in the airports table.
+      - name: arrival_expected
+        description: the expected arrival time in local time
+      - name: arrival_actual
+        description: the actual arrival time in local time
+      - name: arrival_taxi_time
+        description: the time spent taxiing to the gate
+      - name: arrival_delay
+        description: the delay of the arrival time (negative numbers indicates arriving before scheduled)
+  
+  - name: airport_traffic
+    description: Contains the aggregated number incoming and outgoing flights by airport and date.
+    config:
+      materialized: table
+    columns:
+      - name: airport_id
+        description: the airport ID being aggregated over
+        tests:
+          - not_null
+      - name: date
+        description: the date being aggregated over
+      - name: departures
+        description: the number of flights actually departing from the airport on the specified date
+        tests:
+          - not_null
+      - name: arrivals
+        description: the number of flight actually arriving at the airport on the specified date
+        tests:
+          - not_null
